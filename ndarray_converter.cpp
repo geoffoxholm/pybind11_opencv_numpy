@@ -164,6 +164,12 @@ NumpyAllocator g_numpyAllocator;
 
 bool NDArrayConverter::toMat(PyObject *o, Mat &m)
 {
+  // gao
+  // https://stackoverflow.com/questions/32899621/numpy-capi-error-with-import-array-when-compiling-multiple-modules
+  if (PyArray_API == NULL) {
+    import_array();
+  }
+
     bool allowND = true;
     if(!o || o == Py_None)
     {
