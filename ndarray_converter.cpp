@@ -112,6 +112,12 @@ public:
         }
         PyEnsureGIL gil;
 
+        // gao
+        // https://stackoverflow.com/questions/32899621/numpy-capi-error-with-import-array-when-compiling-multiple-modules
+        if (PyArray_API == NULL) {
+          import_array();
+        }
+
         int depth = CV_MAT_DEPTH(type);
         int cn = CV_MAT_CN(type);
         const int f = (int)(sizeof(size_t)/8);
