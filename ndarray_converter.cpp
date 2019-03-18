@@ -111,13 +111,7 @@ public:
             return stdAllocator->allocate(dims0, sizes, type, data, step, flags, usageFlags);
         }
         PyEnsureGIL gil;
-
-        // gao
-        // https://stackoverflow.com/questions/32899621/numpy-capi-error-with-import-array-when-compiling-multiple-modules
-        if (PyArray_API == NULL) {
-          import_array();
-        }
-
+        
         int depth = CV_MAT_DEPTH(type);
         int cn = CV_MAT_CN(type);
         const int f = (int)(sizeof(size_t)/8);
@@ -164,12 +158,6 @@ NumpyAllocator g_numpyAllocator;
 
 bool NDArrayConverter::toMat(PyObject *o, Mat &m)
 {
-  // gao
-  // https://stackoverflow.com/questions/32899621/numpy-capi-error-with-import-array-when-compiling-multiple-modules
-  if (PyArray_API == NULL) {
-    import_array();
-  }
-
     bool allowND = true;
     if(!o || o == Py_None)
     {
