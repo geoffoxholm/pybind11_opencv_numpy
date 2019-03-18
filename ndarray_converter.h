@@ -34,51 +34,41 @@ struct type_caster<cv::Mat> {
   }
 };
 
-#if 1
-template <>
-struct type_caster<cv::Vec3b> {
+/*
+template <typename K>
+bool setItem(const PyObject *item, K &k);
+*/
+
+template <typename T, int N>
+struct type_caster<cv::Vec<T, N>> {
  public:
+  // Alias the type
+  using Vec = cv::Vec<T, N>;
+
   /**
    * This macro declares a local variable 'value' of type cv::Vec3b
    */
-  PYBIND11_TYPE_CASTER(cv::Vec3b, _("tuple"));
+  PYBIND11_TYPE_CASTER(Vec, _("tuple"));
 
   // Convert from python to c++
-  bool load(handle src, bool) {  //
-
-    constexpr auto N = 3;
+  bool load(handle src, bool) {
+    auto tuple = pybind11::reinterpret_borrow<pybind11::tuple>(src);
     for (auto index = 0; index < N; index++) {
-      PyObject *item = PyTuple_GetItem(src.ptr(), static_cast<ssize_t>(index));
-      if (!item) {
-        return false;
-      }
-      PyObject *tmp = PyNumber_Long(item);
-      if (!tmp) {
-        return false;
-      }
-      // Now try to convert into a C++ int
-      value[index] = PyLong_AsLong(tmp);
-      Py_DECREF(tmp);
-      if (PyErr_Occurred()) {
-        return false;
-      }
+      value[index] = tuple[index].cast<T>();
     }
-
     return true;
   }
 
-  // Convert Vec3b into a tuple
-  static handle cast(const cv::Vec3b &src, return_value_policy /* policy */, handle /* parent */) {
-    constexpr auto N = 3;
-    auto object = PyTuple_New(N);
+  // Convert Vec into a tuple
+  static handle cast(const Vec &src, return_value_policy /* policy */, handle /* parent */) {
+    pybind11::tuple mytuple(N);
     for (auto index = 0; index < N; index++) {
-      auto item = PyLong_FromLong(src[index]);
-      PyTuple_SetItem(object, static_cast<ssize_t>(index), item);
+      mytuple[index] = T(src[index]);
     }
-    return handle(object);
+    return mytuple.release();
   }
 };
-#endif
+
 }  // namespace detail
 }  // namespace pybind11
 
